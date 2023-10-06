@@ -1,0 +1,6 @@
+.env
+content.md
+data.txt
+notSendMail.txt
+/dev
+/myenv
