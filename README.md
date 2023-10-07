@@ -41,6 +41,13 @@ Before using this script, make sure you have the following prerequisites:
 
 2. The script will send emails in batches, rotating through different SMTP accounts specified in the `.env` file.
 
+3. User id is generally the email address itself (e.g,user1@google.com) and for password you have to generate an app password from your google account.
+
+   - Go to [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+   - Select app as mail and device as other
+   - Copy the generated password and paste it in the `.env` file
+   - For other email providers, you can follow the same steps.
+
 ## Customization
 
 - You can customize the email subject and message content by modifying the `subject` and `messageHtml` variables in the `main()` function.
