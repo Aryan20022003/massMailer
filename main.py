@@ -5,8 +5,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import os
-
-
 load_dotenv()
 
 def test():
@@ -54,7 +52,7 @@ def sendMail(fromEmail,toEmail,message,server,personGotMail,personNotGotMail):
         print("Email failed to send to", toEmail)
 
 def appendFile(contents,fileName):
-    #open a file in a+ mode and add the contents:arr['stir'] to the fileName if not there then create one 
+    #open file in a+ and populate the file
     with open(fileName,"a+") as f:
         for item in contents:
             f.write(item+"\n")
@@ -70,14 +68,15 @@ def mailSender(subject, message_text):
     smtp_senderData=list(json.loads(os.getenv("smtp_userData")).items()) #load userId and
 
     # Email content
-    # to_emails = readFileAndReturnList('data.txt')
-    to_emails = ["aryannita20022003@gmail.com","aryan20022003@gmail.com"]
+    to_emails = readFileAndReturnList('data.txt')
+    # to_emails = ["aryannita20022003@gmail.com"]
 
     # Create a message object
     msg = MIMEMultipart()
     msg["Subject"] = subject
     msg.attach(MIMEText(message_text, "html"))
 
+    #store the list of person who got mail and who not got mail
     personGotMail=[]  
     personNotGotMail=[]
 
