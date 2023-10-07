@@ -1,11 +1,31 @@
 import smtplib
+import json
 import markdown
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import os
+
+
 load_dotenv()
 
+def test():
+    arr=[1,2,3,4,5]
+    arr1=['a','b','c','d']
+
+    totalCountOfEmails=len(arr)
+    senderIdPointer=0
+    count=0
+    for i in range (totalCountOfEmails-1,-1,-1):
+        
+        if (count>2):
+            count=0
+            senderIdPointer=(senderIdPointer+1)%(len(arr1))
+        
+        print(arr[i],arr1[senderIdPointer])
+        arr.pop()
+        count+=1
+    
 
 def readFileAndReturnList(path):
     with open(path) as f:
@@ -22,50 +42,78 @@ def markDownToHtml():
     content = markdown.markdown(content)
     return content
 
+def sendMail(fromEmail,toEmail,message,server,personGotMail,personNotGotMail):
+    message["To"]=toEmail
+    try:
+        server.sendmail(fromEmail, toEmail, message.as_string())
+        personGotMail.append(toEmail)
+        print("Email sent to", toEmail)
+                
+    except Exception as e:
+        personNotGotMail.append(toEmail)
+        print("Email failed to send to", toEmail)
 
-def mailSender(
-    smtp_server, user_name, user_password, from_email, subject, message_text
-):
+def appendFile(contents,fileName):
+    #open a file in a+ mode and add the contents:arr['stir'] to the fileName if not there then create one 
+    with open(fileName,"a+") as f:
+        for item in contents:
+            f.write(item+"\n")
+
+def mailSender(subject, message_text):
     # Email server settings
-    smtp_port = 25  # For TLS
-    smtp_username = user_name
-    smtp_password = user_password
-
-    # Create an SMTP object
+    smtp_server = os.getenv("smtp_server")
+    smtp_port = os.getenv('port_number')  # For TLS
     server = smtplib.SMTP(smtp_server, smtp_port)
     server.starttls()
-    server.login(smtp_username, smtp_password)
+
+    #list of available {userId,password}
+    smtp_senderData=list(json.loads(os.getenv("smtp_userData")).items()) #load userId and
 
     # Email content
     # to_emails = readFileAndReturnList('data.txt')
-    to_emails = ["aryannita20022003@gmail.com"]
+    to_emails = ["aryannita20022003@gmail.com","aryan20022003@gmail.com"]
+
     # Create a message object
     msg = MIMEMultipart()
-    msg["From"] = from_email
     msg["Subject"] = subject
     msg.attach(MIMEText(message_text, "html"))
 
-    # Send the email to each recipient
-    for to_email in to_emails:
-        msg["To"] = to_email
-        try:
-            server.sendmail(from_email, to_email, msg.as_string())
-            print("Email sent to", to_email)
-            
-        except Exception as e:
-            print("Email failed to send to", to_email)
+    personGotMail=[]  
+    personNotGotMail=[]
+
+    senderIdPointer=0
+    while(True and (len(to_emails)>0)):
+        smtp_username = smtp_senderData[senderIdPointer][0]
+        smtp_password = smtp_senderData[senderIdPointer][1]
+        server.login(smtp_username, smtp_password)
+        msg["From"] = smtp_username
+
+        processedTillNow=0
+        totalCountOfEmails=len(to_emails)
+        # Send the email to each recipient
+        for i in range (totalCountOfEmails-1,-1,-1):
+            to_email=to_emails[i]
+
+            if (processedTillNow>15):
+               processedTillNow=0
+               senderIdPointer=(senderIdPointer+1)%(len(smtp_senderData))
+               
+            sendMail(smtp_username,to_email,msg,server,personGotMail,personNotGotMail)
+            to_emails.pop()
+            processedTillNow+=1
+
     # Quit the server
+    appendFile(personGotMail,"personGotMail.txt")
+    appendFile(personNotGotMail,"personNotGotMail.txt")
     server.quit()
 
 
 def main():
     subject = "Welcome to Google Cloud Learning Path by GDSC NIT Agartala!"
     messageHtml = markDownToHtml()
-    smtp_server = os.getenv("smtp_server")
-    user_name = os.getenv("user_name")
-    user_password = os.getenv("user_password")
-    from_email = os.getenv("from_email")
-    mailSender(smtp_server, user_name, user_password,from_email,subject,messageHtml)
-
+    mailSender(subject,messageHtml)
 
 main()
+
+
+# test()
