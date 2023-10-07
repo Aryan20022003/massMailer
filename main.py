@@ -66,7 +66,15 @@ def mailSender(subject, message_text):
 
     #list of available {userId,password}
     smtp_senderData=list(json.loads(os.getenv("smtp_userData")).items()) #load userId and
-
+    if (len(smtp_senderData)==0):
+        print("No sender data found")
+        return
+    elif (len(smtp_senderData)==1):
+        print("if you send more than 25-30 mail then mailId quality will degrade")
+        print("So please add more than 1 mailId")
+        response=input("Do you want to continue? (y/n)")
+        if (response=="n"):
+            return
     # Email content
     to_emails = readFileAndReturnList('data.txt')
     # to_emails = ["aryannita20022003@gmail.com"]
