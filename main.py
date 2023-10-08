@@ -1,5 +1,6 @@
 import smtplib
 import json
+import time
 import markdown
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -31,7 +32,7 @@ def readFileAndReturnList(path):
 
     content = [x[:-1] for x in content]
     content[-1] = content[-1] + "m"
-    print(content)
+    return content
 
 
 def markDownToHtml():
@@ -46,6 +47,7 @@ def sendMail(fromEmail,toEmail,message,server,personGotMail,personNotGotMail):
         server.sendmail(fromEmail, toEmail, message.as_string())
         personGotMail.append(toEmail)
         print("Email sent to", toEmail)
+        time.sleep(7) #wait for 7 sec to look like human
                 
     except Exception as e:
         personNotGotMail.append(toEmail)
@@ -94,16 +96,17 @@ def mailSender(subject, message_text):
         smtp_password = smtp_senderData[senderIdPointer][1]
         server.login(smtp_username, smtp_password)
         msg["From"] = smtp_username
-
+        print("Sending mail from",smtp_username)
         processedTillNow=0
         totalCountOfEmails=len(to_emails)
         # Send the email to each recipient
         for i in range (totalCountOfEmails-1,-1,-1):
             to_email=to_emails[i]
 
-            if (processedTillNow>15):
+            if (processedTillNow>25):
                processedTillNow=0
                senderIdPointer=(senderIdPointer+1)%(len(smtp_senderData))
+               break
                
             sendMail(smtp_username,to_email,msg,server,personGotMail,personNotGotMail)
             to_emails.pop()
